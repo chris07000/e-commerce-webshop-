@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -12,14 +12,18 @@ export const metadata: Metadata = {
   description: 'Discover premium products that redefine quality and style. NYO is not your ordinary shopping experience.',
   keywords: ['premium', 'e-commerce', 'luxury', 'style', 'NYO', 'not your ordinary', 'shopping'],
   authors: [{ name: 'NYO' }],
-  viewport: 'width=device-width, initial-scale=1',
-  themeColor: '#000000',
   openGraph: {
     title: 'NYO - Not Your Ordinary',
     description: 'Premium products that redefine quality and style',
     type: 'website',
     locale: 'en_US',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#000000',
 }
 
 export default function RootLayout({
