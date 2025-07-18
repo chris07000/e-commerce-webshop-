@@ -184,6 +184,7 @@ export default function HomePage() {
                         width={300}
                         height={300}
                         className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                        priority={product.id === '1'}
                       />
                       <button 
                         className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
