@@ -76,24 +76,72 @@ function CheckoutSuccessContent() {
           } else {
             // After 5 retries, show success anyway (payment went through)
             console.log('Order not found in database, but payment was successful')
-            setOrderDetails({
-              orderId: 'Processing...',
-              paymentIntentId: paymentIntent,
-              total: 0,
-              items: [],
-              estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              }),
-              orderDate: new Date().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              }),
-              isProcessing: true
-            })
+            
+            // Try to get payment info from Stripe directly
+            try {
+              const stripeResponse = await fetch(`/api/stripe/payment-intent/${paymentIntent}`)
+              if (stripeResponse.ok) {
+                const { paymentIntent: pi } = await stripeResponse.json()
+                setOrderDetails({
+                  orderId: 'Processing...',
+                  paymentIntentId: paymentIntent,
+                  total: pi.amount / 100, // Convert from cents
+                  items: [], // Will be empty but total will show
+                  estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }),
+                  orderDate: new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }),
+                  isProcessing: true
+                })
+              } else {
+                // Fallback with zero total
+                setOrderDetails({
+                  orderId: 'Processing...',
+                  paymentIntentId: paymentIntent,
+                  total: 0,
+                  items: [],
+                  estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }),
+                  orderDate: new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }),
+                  isProcessing: true
+                })
+              }
+            } catch {
+              // Final fallback
+              setOrderDetails({
+                orderId: 'Processing...',
+                paymentIntentId: paymentIntent,
+                total: 0,
+                items: [],
+                estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                }),
+                orderDate: new Date().toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                }),
+                isProcessing: true
+              })
+            }
           }
         }
       } catch (error) {

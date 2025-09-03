@@ -1,35 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
 import { Order } from '@/types'
 
-const ORDERS_FILE = path.join(process.cwd(), 'data', 'orders.json')
+// Use Vercel KV for production, fallback to memory for development
+let orders: Order[] = [] // In-memory fallback for development
 
-// Ensure data directory exists
-async function ensureDataDirectory() {
-  const dataDir = path.join(process.cwd(), 'data')
-  try {
-    await fs.access(dataDir)
-  } catch {
-    await fs.mkdir(dataDir, { recursive: true })
-  }
-}
-
-// Read orders from file
+// Read orders from storage
 async function readOrders(): Promise<Order[]> {
-  try {
-    await ensureDataDirectory()
-    const data = await fs.readFile(ORDERS_FILE, 'utf8')
-    return JSON.parse(data)
-  } catch {
-    return []
+  if (process.env.NODE_ENV === 'production' && process.env.KV_REST_API_URL) {
+    try {
+      const { kv } = await import('@vercel/kv')
+      const storedOrders = await kv.get<Order[]>('orders')
+      return storedOrders || []
+    } catch (error) {
+      console.error('Error reading from KV:', error)
+      return []
+    }
+  } else {
+    // Development: use in-memory storage
+    return orders
   }
 }
 
-// Write orders to file
-async function writeOrders(orders: Order[]): Promise<void> {
-  await ensureDataDirectory()
-  await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2))
+// Write orders to storage
+async function writeOrders(ordersData: Order[]): Promise<void> {
+  if (process.env.NODE_ENV === 'production' && process.env.KV_REST_API_URL) {
+    try {
+      const { kv } = await import('@vercel/kv')
+      await kv.set('orders', ordersData)
+    } catch (error) {
+      console.error('Error writing to KV:', error)
+    }
+  } else {
+    // Development: use in-memory storage
+    orders = ordersData
+  }
 }
 
 // GET - Retrieve all orders (for admin)
