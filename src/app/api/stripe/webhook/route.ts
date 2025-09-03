@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Create order data from payment intent
-        const orderData = {
+        const orderData: any = {
           paymentIntentId: paymentIntent.id,
           items: cartItems.map((item: any) => ({
             id: `${item.id}-${item.size || 'default'}-${item.color || 'default'}-${Date.now()}`,
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
           // Generate order ID
           const orderId = `NYO-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
           
-          // Create new order
+          // Create new order with only existing properties
           const newOrder = {
             id: orderId,
             userId: 'guest', // Default to guest since we don't have user accounts
@@ -119,11 +119,11 @@ export async function POST(request: NextRequest) {
             paymentIntentId: orderData.paymentIntentId,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            customerEmail: orderData.customerEmail,
-            customerPhone: orderData.customerPhone,
-            subtotal: orderData.subtotal,
-            shipping: orderData.shipping,
-            tax: orderData.tax,
+            // Optional properties - only add if they exist
+            ...(orderData.customerEmail && { customerEmail: orderData.customerEmail }),
+            ...(orderData.subtotal && { subtotal: orderData.subtotal }),
+            ...(orderData.shipping && { shipping: orderData.shipping }),
+            ...(orderData.tax && { tax: orderData.tax }),
             currency: orderData.currency || 'USD'
           }
           
