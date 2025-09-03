@@ -55,7 +55,7 @@ ADMIN_PASSWORD=jouw_veilige_wachtwoord_hier
 ### 2. Stripe Webhook Setup
 1. Ga naar je Stripe Dashboard
 2. Ga naar Webhooks sectie
-3. Voeg een nieuwe webhook endpoint toe: `https://yourdomain.com/api/stripe/webhook`
+3. Voeg een nieuwe webhook endpoint toe: `https://e-commerce-webshop-353a.vercel.app/api/stripe/webhook`
 4. Selecteer deze events:
    - `payment_intent.succeeded`
    - `payment_intent.payment_failed`

@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
           // Create new order
           const newOrder = {
             id: orderId,
-            userId: orderData.userId || 'guest',
+            userId: 'guest', // Default to guest since we don't have user accounts
             items: orderData.items,
             total: orderData.total,
             status: 'pending',
