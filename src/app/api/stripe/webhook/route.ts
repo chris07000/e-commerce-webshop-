@@ -80,29 +80,52 @@ export async function POST(request: NextRequest) {
         console.log(`📊 Order data:`, JSON.stringify(orderData, null, 2))
         
         try {
-          // Create order using API endpoint (works in all environments)
-          const orderResponse = await fetch(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/orders`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(orderData)
-          })
-
-          if (orderResponse.ok) {
-            const { order } = await orderResponse.json()
-            console.log(`📦 Order created successfully: ${order.id}`)
-            console.log(`💰 Total: $${order.total}`)
-            console.log(`📋 Items: ${order.items.length}`)
+          // Create order directly in KV storage (bypass HTTP calls)
+          console.log('💾 Saving order directly to KV storage...')
+          
+          // Generate order ID
+          const orderId = `NYO-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+          
+          // Create new order
+          const newOrder = {
+            id: orderId,
+            userId: 'guest',
+            items: orderData.items,
+            total: orderData.total,
+            status: 'pending',
+            shippingAddress: orderData.shippingAddress,
+            paymentMethod: orderData.paymentMethod || 'stripe',
+            paymentStatus: 'paid',
+            paymentIntentId: orderData.paymentIntentId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            // Optional properties
+            ...(orderData.customerEmail && { customerEmail: orderData.customerEmail }),
+            ...(orderData.subtotal && { subtotal: orderData.subtotal }),
+            ...(orderData.shipping && { shipping: orderData.shipping }),
+            ...(orderData.tax && { tax: orderData.tax }),
+            currency: orderData.currency || 'USD'
+          }
+          
+          // Save to KV storage
+          if (process.env.KV_REST_API_URL) {
+            const { kv } = await import('@vercel/kv')
             
-            // TODO: Send confirmation email
-            // TODO: Update inventory
-            // TODO: Notify admin
+            // Get existing orders
+            const existingOrders = await kv.get<any[]>('orders') || []
             
+            // Add new order
+            existingOrders.push(newOrder)
+            
+            // Save back to KV
+            await kv.set('orders', existingOrders)
+            
+            console.log(`📦 Order created successfully: ${orderId}`)
+            console.log(`💰 Total: $${newOrder.total}`)
+            console.log(`📋 Items: ${newOrder.items.length}`)
+            console.log(`💾 Saved to KV storage`)
           } else {
-            const errorText = await orderResponse.text()
-            console.error('❌ Failed to create order:', errorText)
-            console.error('📊 Order data that failed:', JSON.stringify(orderData, null, 2))
+            console.log('⚠️ KV not available, order not saved (development mode)')
           }
           
         } catch (orderError) {
