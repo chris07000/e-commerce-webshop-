@@ -100,19 +100,29 @@ export default function CheckoutPage() {
   useEffect(() => {
     const createPaymentIntent = async () => {
       try {
+        // Prepare request body - keep it simple for backwards compatibility
+        const requestBody: any = {
+          amount: orderTotal,
+          currency: 'usd'
+        }
+
+        // Add optional fields only if they exist
+        if (items && items.length > 0) {
+          requestBody.cartItems = items
+        }
+        
+        if (shippingCountry) {
+          requestBody.shippingAddress = {
+            country: shippingCountry
+          }
+        }
+
         const response = await fetch('/api/stripe/create-payment-intent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            amount: orderTotal,
-            currency: 'usd',
-            cartItems: items,
-            shippingAddress: {
-              country: shippingCountry
-            }
-          })
+          body: JSON.stringify(requestBody)
         })
 
         const data = await response.json()

@@ -34,22 +34,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Add cart items as metadata (Stripe has 500 char limit per value)
-    if (cartItems && cartItems.length > 0) {
-      // Store essential cart data in metadata
-      const cartSummary = cartItems.map((item: any) => ({
-        id: item.product.id,
-        name: item.product.name,
-        qty: item.quantity,
-        price: item.product.price,
-        size: item.size,
-        color: item.color
-      }))
-      
-      // Store as JSON string (truncated if too long)
-      const cartDataString = JSON.stringify(cartSummary)
-      metadata.cartData = cartDataString.length > 450 
-        ? cartDataString.substring(0, 450) + '...' 
-        : cartDataString
+    if (cartItems && Array.isArray(cartItems) && cartItems.length > 0) {
+      try {
+        // Store essential cart data in metadata
+        const cartSummary = cartItems.map((item: any) => ({
+          id: item.product?.id || 'unknown',
+          name: item.product?.name || 'unknown',
+          qty: item.quantity || 1,
+          price: item.product?.price || 0,
+          size: item.size || 'N/A',
+          color: item.color || 'N/A'
+        }))
+        
+        // Store as JSON string (truncated if too long)
+        const cartDataString = JSON.stringify(cartSummary)
+        metadata.cartData = cartDataString.length > 450 
+          ? cartDataString.substring(0, 450) + '...' 
+          : cartDataString
+      } catch (cartError) {
+        console.warn('Failed to process cart items for metadata:', cartError)
+        // Continue without cart metadata if there's an error
+      }
     }
 
     // Add shipping country if provided
