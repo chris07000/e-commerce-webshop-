@@ -107,7 +107,11 @@ export default function CheckoutPage() {
           },
           body: JSON.stringify({
             amount: orderTotal,
-            currency: 'usd'
+            currency: 'usd',
+            cartItems: items,
+            shippingAddress: {
+              country: shippingCountry
+            }
           })
         })
 
@@ -126,7 +130,7 @@ export default function CheckoutPage() {
     }
 
     createPaymentIntent()
-  }, [total])
+  }, [orderTotal, items, shippingCountry])
 
   const appearance = {
     theme: 'night' as const,

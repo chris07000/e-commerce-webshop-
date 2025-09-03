@@ -59,8 +59,18 @@ export interface Order {
   shippingAddress: Address
   paymentMethod: string
   paymentStatus: 'pending' | 'paid' | 'failed'
+  paymentIntentId?: string
   createdAt: string
   updatedAt: string
+  // Additional fields for better tracking
+  customerEmail?: string
+  customerPhone?: string
+  subtotal?: number
+  shipping?: number
+  tax?: number
+  currency?: string
+  trackingNumber?: string
+  notes?: string
 }
 
 export interface Category {

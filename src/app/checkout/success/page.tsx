@@ -10,7 +10,7 @@ import { useProductStore } from '@/store/product-store'
 
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams()
-  const { items, total, clearCart, isHydrated } = useCartStore()
+  const { clearCart, isHydrated } = useCartStore()
   const { reduceStock } = useProductStore()
   const [orderDetails, setOrderDetails] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -19,54 +19,74 @@ function CheckoutSuccessContent() {
   const paymentIntent = searchParams.get('payment_intent')
 
   useEffect(() => {
-    // Use real cart data for order confirmation
-    const simulateOrderConfirmation = async () => {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Convert cart items to order format
-      const orderItems = items.map(item => ({
-        name: item.product.name,
-        quantity: item.quantity,
-        price: item.product.discount 
-          ? item.product.price * (1 - item.product.discount / 100)
-          : item.product.price,
-        size: item.size || 'N/A',
-        color: item.color || 'N/A'
-      }))
-      
-      setOrderDetails({
-        orderId: 'NYO-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-        paymentIntentId: paymentIntent,
-        total: total,
-        items: orderItems,
-        estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        })
-      })
-      
-      // Reduce stock for each purchased item
-      items.forEach(item => {
-        reduceStock(item.product.id, item.quantity, item.size)
-      })
+    const fetchOrderDetails = async () => {
+      if (!paymentIntent) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        // Try to fetch order by payment intent ID
+        const response = await fetch('/api/orders')
+        const data = await response.json()
+        
+        if (response.ok && data.orders) {
+          // Find order by payment intent ID
+          const order = data.orders.find((o: any) => o.paymentIntentId === paymentIntent)
+          
+          if (order) {
+            // Convert order to display format
+            setOrderDetails({
+              orderId: order.id,
+              paymentIntentId: order.paymentIntentId,
+              total: order.total,
+              items: order.items.map((item: any) => ({
+                name: item.product.name,
+                quantity: item.quantity,
+                price: item.product.price,
+                size: item.size || 'N/A',
+                color: item.color || 'N/A'
+              })),
+              estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }),
+              orderDate: new Date(order.createdAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            })
+
+            // Reduce stock for each purchased item
+            order.items.forEach((item: any) => {
+              reduceStock(item.product.id, item.quantity, item.size)
+            })
+          } else {
+            console.log('Order not found in database yet, might still be processing...')
+            // Fallback - order might still be processing via webhook
+            setTimeout(() => fetchOrderDetails(), 2000) // Retry after 2 seconds
+            return
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching order details:', error)
+      }
       
       setLoading(false)
       
-      // Clear cart after successful order
+      // Clear cart after successful order confirmation
       clearCart()
     }
 
     if (paymentIntent && isHydrated) {
-      if (items.length > 0) {
-        simulateOrderConfirmation()
-      } else {
-        setLoading(false)
-      }
+      fetchOrderDetails()
+    } else if (isHydrated) {
+      setLoading(false)
     }
-  }, [paymentIntent, items, total, clearCart, isHydrated])
+  }, [paymentIntent, isHydrated, clearCart])
 
   if (loading || !isHydrated) {
     return (
