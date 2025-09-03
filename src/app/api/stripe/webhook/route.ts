@@ -75,31 +75,75 @@ export async function POST(request: NextRequest) {
           paymentStatus: 'paid'
         }
 
-        // Create order via API
+        // Create order directly in webhook (no HTTP call needed)
         console.log(`🔄 Creating order for payment intent: ${paymentIntent.id}`)
         console.log(`📊 Order data:`, JSON.stringify(orderData, null, 2))
         
-        const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/orders`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(orderData)
-        })
-
-        if (orderResponse.ok) {
-          const { order } = await orderResponse.json()
-          console.log(`📦 Order created successfully: ${order.id}`)
-          console.log(`💰 Total: $${order.total}`)
-          console.log(`📋 Items: ${order.items.length}`)
+        try {
+          // Import the order creation logic directly
+          const { promises: fs } = await import('fs')
+          const path = await import('path')
+          
+          const ORDERS_FILE = path.join(process.cwd(), 'data', 'orders.json')
+          
+          // Ensure data directory exists
+          const dataDir = path.join(process.cwd(), 'data')
+          try {
+            await fs.access(dataDir)
+          } catch {
+            await fs.mkdir(dataDir, { recursive: true })
+          }
+          
+          // Read existing orders
+          let orders = []
+          try {
+            const data = await fs.readFile(ORDERS_FILE, 'utf8')
+            orders = JSON.parse(data)
+          } catch {
+            // File doesn't exist yet, start with empty array
+          }
+          
+          // Generate order ID
+          const orderId = `NYO-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+          
+          // Create new order
+          const newOrder = {
+            id: orderId,
+            userId: orderData.userId || 'guest',
+            items: orderData.items,
+            total: orderData.total,
+            status: 'pending',
+            shippingAddress: orderData.shippingAddress,
+            paymentMethod: orderData.paymentMethod || 'stripe',
+            paymentStatus: 'paid',
+            paymentIntentId: orderData.paymentIntentId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            customerEmail: orderData.customerEmail,
+            customerPhone: orderData.customerPhone,
+            subtotal: orderData.subtotal,
+            shipping: orderData.shipping,
+            tax: orderData.tax,
+            currency: orderData.currency || 'USD'
+          }
+          
+          // Add to orders array
+          orders.push(newOrder)
+          
+          // Write back to file
+          await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2))
+          
+          console.log(`📦 Order created successfully: ${orderId}`)
+          console.log(`💰 Total: $${newOrder.total}`)
+          console.log(`📋 Items: ${newOrder.items.length}`)
+          console.log(`📁 Saved to: ${ORDERS_FILE}`)
           
           // TODO: Send confirmation email
           // TODO: Update inventory
           // TODO: Notify admin
           
-        } else {
-          const errorText = await orderResponse.text()
-          console.error('❌ Failed to create order:', errorText)
+        } catch (orderError) {
+          console.error('❌ Failed to create order:', orderError)
           console.error('📊 Order data that failed:', JSON.stringify(orderData, null, 2))
         }
         
