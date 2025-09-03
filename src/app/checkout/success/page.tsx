@@ -19,7 +19,7 @@ function CheckoutSuccessContent() {
   const paymentIntent = searchParams.get('payment_intent')
 
   useEffect(() => {
-    const fetchOrderDetails = async () => {
+    const fetchOrderDetails = async (retryCount = 0) => {
       if (!paymentIntent) {
         setLoading(false)
         return
@@ -64,20 +64,62 @@ function CheckoutSuccessContent() {
             order.items.forEach((item: any) => {
               reduceStock(item.product.id, item.quantity, item.size)
             })
-          } else {
-            console.log('Order not found in database yet, might still be processing...')
-            // Fallback - order might still be processing via webhook
-            setTimeout(() => fetchOrderDetails(), 2000) // Retry after 2 seconds
+            
+            setLoading(false)
+            clearCart()
             return
+          } else if (retryCount < 5) {
+            // Order not found yet, retry up to 5 times (10 seconds total)
+            console.log(`Order not found yet, retrying... (${retryCount + 1}/5)`)
+            setTimeout(() => fetchOrderDetails(retryCount + 1), 2000)
+            return
+          } else {
+            // After 5 retries, show success anyway (payment went through)
+            console.log('Order not found in database, but payment was successful')
+            setOrderDetails({
+              orderId: 'Processing...',
+              paymentIntentId: paymentIntent,
+              total: 0,
+              items: [],
+              estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }),
+              orderDate: new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }),
+              isProcessing: true
+            })
           }
         }
       } catch (error) {
         console.error('Error fetching order details:', error)
+        // Show success anyway if payment went through
+        setOrderDetails({
+          orderId: 'Processing...',
+          paymentIntentId: paymentIntent,
+          total: 0,
+          items: [],
+          estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          orderDate: new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          isProcessing: true
+        })
       }
       
       setLoading(false)
-      
-      // Clear cart after successful order confirmation
       clearCart()
     }
 
@@ -147,7 +189,10 @@ function CheckoutSuccessContent() {
             Payment Successful!
           </h1>
           <p className="text-xl text-white opacity-75 mb-8" style={{ color: '#d0d0d0' }}>
-            Thank you for your order. We've received your payment and will process your order shortly.
+            {orderDetails.isProcessing 
+              ? "Thank you for your payment! Your order is being processed and will appear in our system shortly."
+              : "Thank you for your order. We've received your payment and will process your order shortly."
+            }
           </p>
 
           {/* Order Details */}

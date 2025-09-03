@@ -76,6 +76,9 @@ export async function POST(request: NextRequest) {
         }
 
         // Create order via API
+        console.log(`🔄 Creating order for payment intent: ${paymentIntent.id}`)
+        console.log(`📊 Order data:`, JSON.stringify(orderData, null, 2))
+        
         const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/orders`, {
           method: 'POST',
           headers: {
@@ -87,13 +90,17 @@ export async function POST(request: NextRequest) {
         if (orderResponse.ok) {
           const { order } = await orderResponse.json()
           console.log(`📦 Order created successfully: ${order.id}`)
+          console.log(`💰 Total: $${order.total}`)
+          console.log(`📋 Items: ${order.items.length}`)
           
           // TODO: Send confirmation email
           // TODO: Update inventory
           // TODO: Notify admin
           
         } else {
-          console.error('Failed to create order:', await orderResponse.text())
+          const errorText = await orderResponse.text()
+          console.error('❌ Failed to create order:', errorText)
+          console.error('📊 Order data that failed:', JSON.stringify(orderData, null, 2))
         }
         
       } catch (error) {
