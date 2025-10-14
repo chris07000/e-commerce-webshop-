@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     siteName: 'NYO Streetwear',
     images: [
       {
-        url: '/nyo.png',
+        url: 'https://nyo.wtf/nyo.png',
         width: 1200,
         height: 630,
         alt: 'NYO - Not Your Ordinary Streetwear',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'NYO - Not Your Ordinary Streetwear',
     description: 'NYO Streetwear - Premium products that redefine quality and style',
-    images: ['/nyo.png'],
+    images: ['https://nyo.wtf/nyo.png'],
   },
 }
 
