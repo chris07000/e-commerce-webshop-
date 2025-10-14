@@ -286,11 +286,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     >
                       {size}
                     </button>
-                    {currentStock && (
-                      <span className="text-xs text-white opacity-60 mt-1" style={{ color: '#8a8a8a' }}>
-                        {currentStock[size as keyof typeof currentStock]} left
-                      </span>
-                    )}
                   </div>
                 ))}
               </div>
