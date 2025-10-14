@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     siteName: 'NYO Streetwear',
     images: [
       {
-        url: 'https://nyo.wtf/nyo.png?v=2024-12',
+        url: 'https://nyo.wtf/collab.png?v=2024-12',
         width: 400,
         height: 400,
         alt: 'NYO - Not Your Ordinary Streetwear',
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'NYO - Not Your Ordinary Streetwear',
     description: 'NYO Streetwear - Premium products that redefine quality and style',
-    images: ['https://nyo.wtf/nyo.png?v=2024-12'],
+    images: ['https://nyo.wtf/collab.png?v=2024-12'],
     creator: '@NYOStreetwear',
   },
   robots: {
