@@ -8,15 +8,36 @@ import HydrationProvider from '@/components/HydrationProvider'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'NYO - Not Your Ordinary | Premium E-commerce',
-  description: 'Discover premium products that redefine quality and style. NYO is not your ordinary shopping experience.',
-  keywords: ['premium', 'e-commerce', 'luxury', 'style', 'NYO', 'not your ordinary', 'shopping'],
-  authors: [{ name: 'NYO' }],
+  title: 'NYO - Not Your Ordinary | Streetwear',
+  description: 'NYO Streetwear - Premium products that redefine quality and style. Not your ordinary streetwear brand.',
+  keywords: ['streetwear', 'NYO', 'not your ordinary', 'premium', 'fashion', 'clothing', 'style'],
+  authors: [{ name: 'NYO Streetwear' }],
+  icons: {
+    icon: '/nyo.png',
+    shortcut: '/nyo.png',
+    apple: '/nyo.png',
+  },
   openGraph: {
-    title: 'NYO - Not Your Ordinary',
-    description: 'Premium products that redefine quality and style',
+    title: 'NYO - Not Your Ordinary Streetwear',
+    description: 'NYO Streetwear - Premium products that redefine quality and style',
     type: 'website',
     locale: 'en_US',
+    url: 'https://nyo.wtf',
+    siteName: 'NYO Streetwear',
+    images: [
+      {
+        url: '/nyo.png',
+        width: 1200,
+        height: 630,
+        alt: 'NYO - Not Your Ordinary Streetwear',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NYO - Not Your Ordinary Streetwear',
+    description: 'NYO Streetwear - Premium products that redefine quality and style',
+    images: ['/nyo.png'],
   },
 }
 

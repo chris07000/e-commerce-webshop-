@@ -40,7 +40,7 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key_here
 
 # Application Configuration
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_BASE_URL=https://nyo.wtf
 
 # Admin Authentication
 ADMIN_PASSWORD=jouw_veilige_wachtwoord_hier
@@ -55,7 +55,7 @@ ADMIN_PASSWORD=jouw_veilige_wachtwoord_hier
 ### 2. Stripe Webhook Setup
 1. Ga naar je Stripe Dashboard
 2. Ga naar Webhooks sectie
-3. Voeg een nieuwe webhook endpoint toe: `https://e-commerce-webshop-353a.vercel.app/api/stripe/webhook`
+3. Voeg een nieuwe webhook endpoint toe: `https://nyo.wtf/api/stripe/webhook`
 4. Selecteer deze events:
    - `payment_intent.succeeded`
    - `payment_intent.payment_failed`
