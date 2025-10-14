@@ -46,11 +46,13 @@ NEXT_PUBLIC_BASE_URL=https://nyo.wtf
 ADMIN_PASSWORD=jouw_veilige_wachtwoord_hier
 ```
 
-**⚠️ Belangrijk voor Admin Wachtwoord:**
-- Verander `ADMIN_PASSWORD` naar een sterk wachtwoord
-- Gebruik geen eenvoudige wachtwoorden zoals "123456" of "admin"
-- Voor extra beveiliging kun je een lang wachtwoord gebruiken
-- Standaard wachtwoord is `admin123` (verander dit!)
+**🔒 KRITIEK - Admin Wachtwoord Beveiliging:**
+- `ADMIN_PASSWORD` MOET worden ingesteld - geen fallback wachtwoord!
+- Gebruik een sterk wachtwoord: minimaal 12 karakters, letters, cijfers, symbolen
+- Voorbeelden van sterke wachtwoorden: `NYO_Admin_2024!@#`, `Str33tw3ar_S3cur3!`
+- ❌ NOOIT gebruiken: "admin123", "password", "123456", etc.
+- 🛡️ Beveiliging: Rate limiting (5 pogingen → 15 min lockout)
+- 🔐 Wachtwoorden worden gehashed opgeslagen (SHA256 + salt)
 
 ### 2. Stripe Webhook Setup
 1. Ga naar je Stripe Dashboard
@@ -111,11 +113,13 @@ Het systeem maakt automatisch een `data/` directory aan in je project root om or
 - Volledige order details inclusief klant info en items
 - Veilige sessie management - blijft ingelogd tot je uitlogt
 
-### Admin Login:
-1. Ga naar `http://localhost:3000/admin/orders`
-2. Voer admin wachtwoord in (standaard: `admin123`)
-3. Krijg toegang tot volledige order dashboard
-4. Gebruik logout knop rechts boven om veilig uit te loggen
+### 🔐 Admin Login (BEVEILIGD):
+1. Ga naar `https://nyo.wtf/admin/orders`
+2. Voer je sterke admin wachtwoord in (GEEN standaard wachtwoord!)
+3. ⚠️ Na 5 foute pogingen: 15 minuten lockout
+4. Krijg toegang tot volledige order dashboard
+5. Gebruik logout knop rechts boven om veilig uit te loggen
+6. 🛡️ Alle login pogingen worden gelogd voor security monitoring
 
 ## Volgende Stappen (Optioneel)
 
