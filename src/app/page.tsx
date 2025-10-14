@@ -198,7 +198,7 @@ export default function HomePage() {
                       </button>
                       {currentStock < 10 && (
                         <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-medium">
-                          Only {currentStock} left
+                          Low Stock
                         </div>
                       )}
                   </div>

@@ -5,9 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ShoppingCart, User, ArrowLeft } from 'lucide-react'
 
-
-export default function LookbookPage() {
-
+export default function ContactPage() {
   return (
     <div className="min-h-screen bg-background" style={{ backgroundColor: '#0a0a0a' }}>
       {/* Header */}
@@ -56,7 +54,7 @@ export default function LookbookPage() {
 
       {/* Page Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
             <div className="flex justify-center mb-6">
@@ -69,25 +67,21 @@ export default function LookbookPage() {
               />
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-4" style={{ color: '#fafafa' }}>
-              Lookbook
+              Contact
             </h1>
-            <p className="text-lg text-white opacity-75 max-w-2xl mx-auto" style={{ color: '#d0d0d0' }}>
-              Discover how NYO pieces come together to create bold, authentic streetwear looks that define urban style.
-            </p>
           </div>
 
-          {/* Coming Soon Message */}
+          {/* Contact Information */}
           <div className="text-center py-20">
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-8" style={{ color: '#fafafa' }}>
-              Coming SOON
+            <h2 className="text-2xl font-bold text-white mb-8" style={{ color: '#fafafa' }}>
+              Get in Touch
             </h2>
-            <p className="text-xl text-white mb-8" style={{ color: '#fafafa' }}>
-              Show us your fit via @lucidbtc
+            <p className="text-xl text-white mb-4" style={{ color: '#fafafa' }}>
+              team@lucidwear.io
             </p>
           </div>
         </div>
       </div>
-
 
       {/* Footer */}
       <footer className="bg-black border-t border-border text-primary-foreground py-12 mt-16" style={{ backgroundColor: '#000000', borderColor: '#2a2a2a' }}>
@@ -149,4 +143,4 @@ export default function LookbookPage() {
       </footer>
     </div>
   )
-} 
+}

@@ -355,7 +355,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <div className="text-white opacity-75" style={{ color: '#d0d0d0' }}>
               {selectedSize ? (
                 currentStock && currentStock[selectedSize as keyof typeof currentStock] > 0 ? (
-                  <span className="text-green-400">✓ In Stock ({currentStock[selectedSize as keyof typeof currentStock]} available in size {selectedSize})</span>
+                  <span className="text-green-400">✓ In Stock</span>
                 ) : (
                   <span className="text-red-400">✗ Size {selectedSize} Out of Stock</span>
                 )

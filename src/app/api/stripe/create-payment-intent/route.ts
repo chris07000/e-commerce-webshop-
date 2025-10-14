@@ -5,6 +5,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
 })
 
+// Server-side product prices (SINGLE SOURCE OF TRUTH)
+const SERVER_PRODUCTS = {
+  '1': { name: 'Black Oversized', price: 89.99 },
+  '2': { name: 'NYO White T-shirt', price: 34.99 },
+  '3': { name: 'NYO Acid Washed Hoodie', price: 95.99 },
+  '4': { name: 'Black Oversized', price: 34.99 }
+} as const
+
 export async function POST(request: NextRequest) {
   try {
     const { 
@@ -15,7 +23,43 @@ export async function POST(request: NextRequest) {
       shippingAddress 
     } = await request.json()
 
-    if (!amount || amount <= 0) {
+    // 🔒 SECURITY: Calculate server-side total instead of trusting frontend
+    let serverCalculatedTotal = 0
+    
+    if (cartItems && Array.isArray(cartItems)) {
+      for (const item of cartItems) {
+        const productId = item.product?.id
+        const quantity = item.quantity || 1
+        
+        // Get server-side price (SECURE)
+        const serverProduct = SERVER_PRODUCTS[productId as keyof typeof SERVER_PRODUCTS]
+        
+        if (!serverProduct) {
+          return NextResponse.json(
+            { error: `Invalid product ID: ${productId}` },
+            { status: 400 }
+          )
+        }
+        
+        // Calculate with server price (not frontend price)
+        serverCalculatedTotal += serverProduct.price * quantity
+      }
+    }
+
+    // 🚨 SECURITY CHECK: Compare frontend amount with server calculation
+    const tolerance = 0.01 // Allow 1 cent difference for rounding
+    if (Math.abs(amount - serverCalculatedTotal) > tolerance) {
+      console.error(`🚨 PRICE MANIPULATION DETECTED!`)
+      console.error(`Frontend sent: $${amount}`)
+      console.error(`Server calculated: $${serverCalculatedTotal}`)
+      
+      return NextResponse.json(
+        { error: 'Price validation failed' },
+        { status: 400 }
+      )
+    }
+
+    if (!serverCalculatedTotal || serverCalculatedTotal <= 0) {
       return NextResponse.json(
         { error: 'Invalid amount' },
         { status: 400 }
@@ -64,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert to cents
+      amount: Math.round(serverCalculatedTotal * 100), // Use SERVER price, not frontend
       currency: currency,
       automatic_payment_methods: {
         enabled: true,
@@ -72,7 +116,7 @@ export async function POST(request: NextRequest) {
       metadata,
     })
 
-    console.log(`💳 Payment Intent created: ${paymentIntent.id} for $${amount}`)
+    console.log(`💳 Payment Intent created: ${paymentIntent.id} for $${serverCalculatedTotal}`)
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
