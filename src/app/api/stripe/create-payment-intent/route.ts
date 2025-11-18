@@ -13,6 +13,17 @@ const SERVER_PRODUCTS = {
   '4': { name: 'Black Oversized', price: 34.99 }
 } as const
 
+// Get shipping cost based on country (same logic as frontend)
+function getShippingCost(country: string) {
+  if (country === 'GB') {
+    return 4.99 // UK domestic shipping
+  } else if (country === 'US' || country === 'CA') {
+    return 15.99 // North America
+  } else {
+    return 19.99 // Rest of world
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { 
@@ -24,7 +35,7 @@ export async function POST(request: NextRequest) {
     } = await request.json()
 
     // 🔒 SECURITY: Calculate server-side total instead of trusting frontend
-    let serverCalculatedTotal = 0
+    let serverCalculatedSubtotal = 0
     
     if (cartItems && Array.isArray(cartItems)) {
       for (const item of cartItems) {
@@ -42,16 +53,23 @@ export async function POST(request: NextRequest) {
         }
         
         // Calculate with server price (not frontend price)
-        serverCalculatedTotal += serverProduct.price * quantity
+        serverCalculatedSubtotal += serverProduct.price * quantity
       }
     }
+
+    // Calculate shipping cost (server-side)
+    const shippingCountry = shippingAddress?.country || 'GB'
+    const serverShippingCost = getShippingCost(shippingCountry)
+    
+    // Total = subtotal + shipping
+    const serverCalculatedTotal = serverCalculatedSubtotal + serverShippingCost
 
     // 🚨 SECURITY CHECK: Compare frontend amount with server calculation
     const tolerance = 0.01 // Allow 1 cent difference for rounding
     if (Math.abs(amount - serverCalculatedTotal) > tolerance) {
       console.error(`🚨 PRICE MANIPULATION DETECTED!`)
       console.error(`Frontend sent: $${amount}`)
-      console.error(`Server calculated: $${serverCalculatedTotal}`)
+      console.error(`Server calculated: $${serverCalculatedTotal} (subtotal: $${serverCalculatedSubtotal} + shipping: $${serverShippingCost})`)
       
       return NextResponse.json(
         { error: 'Price validation failed' },
